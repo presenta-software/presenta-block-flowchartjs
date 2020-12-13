@@ -11,7 +11,7 @@ const block = function (el, config) {
 
   el.appendChild(child)
 
-  // required otherwise the rendering is wrong
+  // postpone the rendering otherwise there'll be calc issues
   setTimeout(() => {
     const flowcode = flowchart.parse(config.config)
     flowcode.drawSVG(canvas, config.style)
