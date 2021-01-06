@@ -11,17 +11,39 @@ const block = function (el, config) {
 
   el.appendChild(child)
 
-  // postpone the rendering otherwise there'll be calc issues
-  setTimeout(() => {
-    const flowcode = flowchart.parse(config.config)
-    flowcode.drawSVG(canvas, config.style)
-  })
+  let def = config.config
+
+  const createChart = () => {
+    setTimeout(() => {
+      const flowcode = flowchart.parse(def)
+      flowcode.drawSVG(canvas, config.style)
+    })
+  }
+
+  if (def) {
+    createChart()
+  } else {
+    if (config._cache) {
+      def = config._cache
+      createChart()
+    } else {
+      // fallback to direct loading
+      fetch(config.url)
+        .then(resp => resp.text())
+        .then(data => {
+          config._cache = data
+          def = data
+          createChart()
+        })
+    }
+  }
 }
 
 export default block
 
 block.install = Presenta => {
   Presenta.addBlock('flowchartjs', block)
+  if (Presenta.io.addCache) Presenta.io.addCache({ type: 'flowchartjs', field: 'url' })
 }
 
 if (typeof window !== 'undefined' && window.Presenta) {
